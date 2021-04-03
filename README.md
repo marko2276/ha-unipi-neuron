@@ -25,7 +25,7 @@ Part of my backlog items are: support for MODBUS, 1-Wire sensors, automatic Neur
 # Configuration
 
 Example of Basic config for three Unipi Neuron devices.<br/>
-type parameter is not used, others should be self explanatory.
+type parameter is not used for any specific purpose but one should set it to either "L203", "M203" or "S203". Other parameters should be self explanatory.
 ```yaml
 #Unipi neuron
 unipi_neuron:
