@@ -1,0 +1,11 @@
+{
+  "domain": "unipi_neuron",
+  "name": "Unipi_neuron",
+  "documentation": "https://www.home-assistant.io/integrations/unipi_neuron",
+  "requirements": ["evok-ws-client"],
+  "dependencies": [],
+  "version": "0.0.1",
+  "codeowners": [
+    "@marko2276"
+  ]
+}
