@@ -1,11 +1,10 @@
 # ha-unipi-neuron
-Custom Home Assistant (HA) integration for [Unipi](https://www.unipi.technology) devices. In my home assistant project I use neron type of products, but the component should work as well on other products (Axon, Patron, Lite) where [Evok API](https://github.com/UniPiTechnology/evok) can be run.
+Custom Home Assistant (HA) integration for [Unipi](https://www.unipi.technology) devices. In my home assistant project I use Neron type of products but the component should work as well with other products (Axon, Patron, Lite) where [Evok API](https://github.com/UniPiTechnology/evok) can be run.
 
-The system connect to the Unipi device via websocket (part of a separate [python package](https://pypi.org/project/evok-ws-client/) wrapper). This bidirectional management connection enable a blazingly fast user experience and although Neuron devices enables directSwitch functionality (I do use it for light switches), you will almost not see any difference between it or if you let HA do the desired action. Latency between an input signal change and action executed by HA is very low.
+The system connect to the Unipi device via websocket (part of a separate [python package](https://pypi.org/project/evok-ws-client/) wrapper). This bidirectional management connection enables a blazingly fast user experience and although Neuron devices supports directSwitch functionality (I do use it for light switches), you will most probably not see any difference between it or if you let HA do the desired action. Latency between an input signal change and action executed by HA is very low.
 
 I was planning (this is still on my whish list) to integrate the component directly into home-assistant repo but to get things available for others to use, play around and extend, I decided to just release it as a barebone repo for now.
 
-# Usage
 # Installation
 
 1. Make sure that EVOK is installed and running on your Unipi devices.
@@ -25,7 +24,8 @@ Part of my backlog items are: support for MODBUS, 1-Wire sensors, automatic Neur
 
 # Configuration
 
-Example of Basic config for three Unipi Neuron devices. type parameter is not used, others should be self explanatory.
+Example of Basic config for three Unipi Neuron devices.<br/>
+type parameter is not used, others should be self explanatory.
 ```yaml
 #Unipi neuron
 unipi_neuron:
@@ -99,13 +99,13 @@ binary_sensor:
 
 
 ## Cover component
-Used to manage dummy cover/blinds that only support driving motor up and down. No ability to detect location of the blind.
+Used to manage dummy cover/blinds that only support driving motor up and down ( without any ability or sensor to detect location of the blinds or tilt)
 
-Warning: Based on my cover supplier, driving both signals on up and down my damage the motor. Well in fact this happened to me once but it was not the motor that burned, it was relay outputs on my Unipi! Anyhow I have added a couple of check in the code to prevent this situation but there may still be corner cases that are not fully covered - so use it with caution :) 
+Warning: Based on the cover supplier documentation, driving both signals up and down at the same time my damage the motor. Well in fact this happened to me once but it was not the motor that burned, it was relay outputs on my Unipi! Anyhow I have added a couple of check in the code to prevent such situation but there may still be corner cases that are not fully covered - so use it with caution :). Use this software at your own risk! I do not take responsibility in any way. 
 
 port_up and port_down are output ports used to drive blinds up and down.<br/>
 full_close_time and full_open_time define the time it takes for blind to fully open (from closed state) or fully close (from open state) in seconds.<br/>
-tilt_change_time defines time (in seconds) that the tilt changes (the same for opening or closing the tilt)<br/>
+tilt_change_time defines time (in seconds) that the tilt changes from fully open to fully closed state (and vice-versa) <br/>
 min_reverse_dir_time minimum time between changing the direction of the motor (in seconds) - defined by blind motor supplier.<br/>
 
 ```yaml
