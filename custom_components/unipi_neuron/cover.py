@@ -232,6 +232,11 @@ class UnipiCover(CoverEntity):
         return self._name
 
     @property
+    def unique_id(self):
+        """Return the unique ID of this cover entity."""
+        return f"{self._device}_{self._port}"
+
+    @property
     def is_closed(self):
         """Return if the cover is closed."""
         return self._position == 0

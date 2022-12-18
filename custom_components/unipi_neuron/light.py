@@ -93,6 +93,11 @@ class UnipiLight(LightEntity):
         return self._name
 
     @property
+    def unique_id(self):
+        """Return the unique ID of this light entity."""
+        return f"{self._device}_{self._port}"
+
+    @property
     def supported_features(self):
         """Flag supported features."""
         flag = 0
