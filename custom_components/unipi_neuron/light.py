@@ -33,7 +33,7 @@ DEVICE_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_DEVICE): vol.Any("relay", "led"),
-        vol.Required(CONF_PORT): cv.matches_regex(r"^[1-3]_[0-1][0-9]"),
+        vol.Required(CONF_PORT): cv.matches_regex(r"^[1-3]_[0-1][0-9]|[1-8]"),
         vol.Required(CONF_MODE): vol.Any("on_off", "pwm"),
     }
 )
@@ -95,7 +95,7 @@ class UnipiLight(LightEntity):
     @property
     def unique_id(self):
         """Return the unique ID of this light entity."""
-        return f"{self._device}_{self._port}"
+        return f"{self._device}_{self._port}_at_{self._unipi_hub._name}"
 
     @property
     def supported_features(self):
