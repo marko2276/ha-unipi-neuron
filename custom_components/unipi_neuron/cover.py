@@ -77,8 +77,8 @@ COVER_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_DEVICE): vol.Any("relay", "led"),
-        vol.Required(CONF_PORT_UP): cv.matches_regex(r"^[1-3]_[0-1][0-9]"),
-        vol.Required(CONF_PORT_DOWN): cv.matches_regex(r"^[1-3]_[0-1][0-9]"),
+        vol.Required(CONF_PORT_UP): cv.matches_regex(r"^[1-3]_[0-1][0-9]|[1-8]"),
+        vol.Required(CONF_PORT_DOWN): cv.matches_regex(r"^[1-3]_[0-1][0-9]|[1-8]"),
         vol.Required(CONF_FULL_CLOSE_TIME): cv.time_period_seconds,
         vol.Required(CONF_FULL_OPEN_TIME): cv.time_period_seconds,
         vol.Required(CONF_TILT_CHANGE_TIME): cv.time_period_seconds,
@@ -234,7 +234,7 @@ class UnipiCover(CoverEntity):
     @property
     def unique_id(self):
         """Return the unique ID of this cover entity."""
-        return f"{self._device}_{self._port}"
+        return f"{self._device}_{self._port}_at_{self._unipi_hub._name}"
 
     @property
     def is_closed(self):
