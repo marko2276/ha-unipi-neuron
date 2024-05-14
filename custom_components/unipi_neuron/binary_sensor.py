@@ -90,7 +90,7 @@ class UnipiBinarySensor(BinarySensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID of this binary sensor entity."""
-        return f"{self._device}_{self._port}"
+        return f"{self._device}_{self._port}_at_{self._unipi_hub._name}"
 
     # @property
     # def device_class(self):
@@ -103,9 +103,8 @@ class UnipiBinarySensor(BinarySensorEntity):
     #     """
     #     _LOGGER.info("Update binary sensor %s", self._name)
     #     self._state = self._unipi_hub.evok_state_get(self._device, self._port) == 1
-        
+
     def _update_callback(self):
         """State has changed"""
         self._state = self._unipi_hub.evok_state_get(self._device, self._port) == 1
-        #self.async_schedule_update_ha_state(True)
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()

@@ -64,12 +64,11 @@ async def async_setup(hass, config):
 
 
 async def evok_connection(hass, neuron, reconnect_seconds):
-    
+
     def evok_update_dispatch_send(name, device, circuit, value):
         _LOGGER.debug("SENDING Dispacher on %s %s", device, circuit)
-        hass.helpers.dispatcher.async_dispatcher_send(
-            f"{DOMAIN}_{name}_{device}_{circuit}"
-        )
+        async_dispatcher_send(hass, f"{DOMAIN}_{name}_{device}_{circuit}")
+
     # Keep connection and subscription to websocket server on Unipi
     # Reconnect if connection is lost
     _connected = False
@@ -89,4 +88,4 @@ async def evok_connection(hass, neuron, reconnect_seconds):
             if not await neuron.evok_receive(True, evok_update_dispatch_send):
                 _connected = False
                 break
-    
+
