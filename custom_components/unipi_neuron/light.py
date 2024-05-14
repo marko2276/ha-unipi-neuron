@@ -9,6 +9,8 @@ from homeassistant.components.light import (
     SUPPORT_BRIGHTNESS,
     PLATFORM_SCHEMA,
     LightEntity,
+    LightEntityFeature,
+    ColorMode
 )
 
 from homeassistant.const import (
@@ -78,8 +80,14 @@ class UnipiLight(LightEntity):
         self._state = None
         self._dimmable = False
         self._brightness = None
+        self._attr_supported_features = LightEntityFeature(0)
         if mode == "pwm":
             self._dimmable = True
+            self._attr_color_mode = ColorMode.BRIGHTNESS
+            self._attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+        else:
+            self._attr_color_mode = ColorMode.ONOFF
+            self._attr_supported_color_modes = {ColorMode.ONOFF}
 
     async def async_added_to_hass(self):
         """Call when entity is added to hass."""
@@ -96,15 +104,6 @@ class UnipiLight(LightEntity):
     def unique_id(self):
         """Return the unique ID of this light entity."""
         return f"{self._device}_{self._port}_at_{self._unipi_hub._name}"
-
-    @property
-    def supported_features(self):
-        """Flag supported features."""
-        flag = 0
-        if self._dimmable:
-            flag |= SUPPORT_BRIGHTNESS
-        
-        return flag
 
     @property
     def brightness(self):
@@ -136,7 +135,7 @@ class UnipiLight(LightEntity):
             brightness = self._brightness
             if brightness == 0 or brightness == None:
                 brightness = 255
-        
+
         if self._dimmable:
             _LOGGER.info("Turn on light %s. Set britness to %d ", self._name, brightness)
             #await self._unipi_hub.evok_send(self._device, self._port, str(round(brightness / 255 * 100)))
@@ -169,7 +168,6 @@ class UnipiLight(LightEntity):
 
     def _update_callback(self):
         """State has changed"""
-        #self.async_schedule_update_ha_state(True)
         self._state = self._unipi_hub.evok_state_get(self._device, self._port) == 1
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()
 

@@ -9,15 +9,8 @@ from homeassistant.components.cover import (
     DEVICE_CLASSES_SCHEMA,
     ENTITY_ID_FORMAT,
     PLATFORM_SCHEMA,
-    SUPPORT_CLOSE,
-    SUPPORT_CLOSE_TILT,
-    SUPPORT_OPEN,
-    SUPPORT_OPEN_TILT,
-    SUPPORT_SET_POSITION,
-    SUPPORT_SET_TILT_POSITION,
-    SUPPORT_STOP,
-    SUPPORT_STOP_TILT,
     CoverEntity,
+    CoverEntityFeature
 )
 from homeassistant.const import (
     CONF_DEVICE,
@@ -67,10 +60,14 @@ CONF_TILT_CHANGE_TIME = "tilt_change_time"
 CONF_MIN_REVERSE_DIR_TIME = "min_reverse_dir_time"
 
 TILT_FEATURES = (
-    SUPPORT_OPEN_TILT
-    | SUPPORT_CLOSE_TILT
-    | SUPPORT_STOP_TILT
-    | SUPPORT_SET_TILT_POSITION
+    CoverEntityFeature.OPEN
+    | CoverEntityFeature.CLOSE
+    | CoverEntityFeature.STOP
+    | CoverEntityFeature.SET_POSITION
+    | CoverEntityFeature.OPEN_TILT
+    | CoverEntityFeature.CLOSE_TILT
+    | CoverEntityFeature.STOP_TILT
+    | CoverEntityFeature.SET_TILT_POSITION
 )
 
 COVER_SCHEMA = vol.Schema(
@@ -234,7 +231,7 @@ class UnipiCover(CoverEntity):
     @property
     def unique_id(self):
         """Return the unique ID of this cover entity."""
-        return f"{self._device}_{self._port}_at_{self._unipi_hub._name}"
+        return f"{self._device}_{self._port_up}_at_{self._unipi_hub._name}"
 
     @property
     def is_closed(self):
@@ -285,8 +282,7 @@ class UnipiCover(CoverEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_SET_POSITION | TILT_FEATURES
-        return supported_features
+        return TILT_FEATURES
 
     @property
     def should_poll(self):
@@ -323,8 +319,8 @@ class UnipiCover(CoverEntity):
             await self._unipi_hub.evok_send(self._device, self._port_up, "0")
             await self._unipi_hub.evok_send(self._device, self._port_down, "1")
             _LOGGER.info("Cover CLOSING %s", self._config_state)
-            
-    
+
+
     @callback
     async def _stop_cover_timeout(self, _):
         await self._stop()
@@ -360,9 +356,9 @@ class UnipiCover(CoverEntity):
         """
         We don't actually have a detectors for cover postitions, so we do it
         based on time motor was running in specific direction. This is far from
-        accurate. We use two automatic calibration points - closed and open positions; 
+        accurate. We use two automatic calibration points - closed and open positions;
         calibrated when the user has motor running in one direction more time than set
-        in close_wait or open_wait congfig respectively 
+        in close_wait or open_wait congfig respectively
         """
         new_position = kwargs[ATTR_POSITION]
 
@@ -385,7 +381,7 @@ class UnipiCover(CoverEntity):
                 new_position = 110
             if new_position == 0:
                 new_position = -10
-            
+
             if new_position > position:
                 stop_timer = (new_position - position)*self._full_open_time/100
                 self._cancel_any_pending_stop_cover_timers()
@@ -396,7 +392,7 @@ class UnipiCover(CoverEntity):
                 self._cancel_any_pending_stop_cover_timers()
                 await self.async_close_cover()
                 self._stop_cover_timer = async_call_later(self.hass, stop_timer, self._stop_cover_timeout)
-            
+
             _LOGGER.info("Setting cover %s to position %d; timeout %d", self._friendly_name, new_position, stop_timer)
 
 
@@ -417,7 +413,7 @@ class UnipiCover(CoverEntity):
     async def async_set_cover_tilt_position(self, **kwargs):
         """Move the cover tilt to a specific position."""
         new_tilt_value = kwargs[ATTR_TILT_POSITION]
-        
+
         if (self._tilt_value == None):
             if new_tilt_value == 0:
                 self._cancel_any_pending_stop_cover_timers()
@@ -429,7 +425,7 @@ class UnipiCover(CoverEntity):
                 self._stop_cover_timer = async_call_later(self.hass, self._tilt_change_time, self._stop_cover_timeout)
         else:
             position, tilt = current_state = self._get_position_and_tilt(self._oper_state, self._time_last_movement_start, datetime.now(), False)
-            
+
             if new_tilt_value > tilt:
                 stop_timer = (new_tilt_value - tilt)*self._tilt_change_time/100
                 self._cancel_any_pending_stop_cover_timers()
@@ -447,7 +443,7 @@ class UnipiCover(CoverEntity):
 
 
     async def async_update(self):
-        """Update the state from the template."""   
+        """Update the state from the template."""
 
         for property_name, template in (
             ("_icon", self._icon_template),
@@ -495,7 +491,7 @@ class UnipiCover(CoverEntity):
                         stop_time,
                     )
             return
-        
+
         deltatime = (stop_time - start_time)/timedelta(microseconds=1000)
         print("Delatatime is", deltatime, " Tiltchaneg is", self._tilt_change_time)
         new_position_value = None
@@ -513,7 +509,7 @@ class UnipiCover(CoverEntity):
                         new_tilt_value = 100
                 except:
                     pass
-                 
+
         if oper_state == OPER_STATE_CLOSING:
             if deltatime >= self._tilt_change_time*1000:
                 new_tilt_value = 0
@@ -525,7 +521,7 @@ class UnipiCover(CoverEntity):
                         new_tilt_value = 0
                 except:
                     pass
-                
+
 
         #position
         if oper_state == OPER_STATE_OPENING:
@@ -536,7 +532,7 @@ class UnipiCover(CoverEntity):
                 try:
                     new_position_value = self._position + position_change
                     if new_position_value > 100:
-                        new_position_value = 100 
+                        new_position_value = 100
                 except:
                     pass
         if oper_state == OPER_STATE_CLOSING:
@@ -550,7 +546,7 @@ class UnipiCover(CoverEntity):
                         new_position_value = 0
                 except:
                     pass
-        
+
         if update:
             try:
                 self._position = new_position_value
@@ -586,7 +582,7 @@ class UnipiCover(CoverEntity):
                         self._name,
                     )
         _LOGGER.info("Cover oper state %s", self._oper_state)
-        
+
         if new_oper_state != self._oper_state:
             if new_oper_state == OPER_STATE_IDLE:
                  #update position and tilt
@@ -600,6 +596,6 @@ class UnipiCover(CoverEntity):
             if self._oper_state in (OPER_STATE_OPENING, OPER_STATE_CLOSING):
                 self._time_last_movement_start = datetime.now()
 
-            self.async_schedule_update_ha_state()
+            self.schedule_update_ha_state()
 
 
