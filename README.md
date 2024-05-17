@@ -1,9 +1,9 @@
 # ha-unipi-neuron
-Custom Home Assistant (HA) integration for [Unipi](https://www.unipi.technology) devices. In my home assistant project I use Neron type of products but the component should work as well with other products (Axon, Patron, Lite) where [Evok API](https://github.com/UniPiTechnology/evok) can be run.
+Custom Home Assistant (HA) integration for [Unipi](https://www.unipi.technology) devices. In my home assistant project, I use Neron type of products but the component should work as well with other products (Axon, Patron, Lite) where [Evok API](https://github.com/UniPiTechnology/evok) can be run.
 
-The system connect to the Unipi device via websocket (part of a separate [python package](https://pypi.org/project/evok-ws-client/) wrapper). This bidirectional management connection enables a blazingly fast user experience and although Neuron devices supports directSwitch functionality (I do use it for light switches), you will most probably not see any difference between it or if you let HA do the desired action. Latency between an input signal change and action executed by HA is very low.
+The system connects to the Unipi device via WebSocket (part of a separate [python package](https://pypi.org/project/evok-ws-client/) wrapper). This bidirectional management connection enables a blazing fast user experience and although Neuron devices support directSwitch functionality (I do use it for light switches), you will most likely not see any difference between it or if you let HA do the desired action. The latency between an input signal change and an action executed by HA is very low.
 
-I was planning (this is still on my whish list) to integrate the component directly into home-assistant repo but to get things available for others to use, play around and extend, I decided to just release it as a barebone repo for now.
+I was planning (this is still on my wishlist) to integrate the component directly into the home-assistant repo but to get things available for others to use, play around and extend, I decided to just release it as a barebone repo for now.
 
 # Installation
 
@@ -13,19 +13,19 @@ I was planning (this is still on my whish list) to integrate the component direc
 
 1. Simply copy the custom_components folder to your own Home Assistant /config folder.
 
-2. Change you configuration yaml file with desired configuration.
+2. Change your configuration yaml file with the desired configuration.
 
 # Supported features
-Functionality wise, it supports bare minimum (multiple device instances, lights, binary sensors and covers) so that my home-assistant project works.
+Functionality-wise, it supports the bare minimum (multiple device instances, lights, binary sensors and covers) so that my home-assistant project works.
 
 ## TODO
-There are tons of things that ar missing or could be added.
-Part of my backlog items are: support for MODBUS, 1-Wire sensors, automatic Neuron configuration, etc. 
+There are tons of things that are missing or could be added.
+Part of my backlog items are support for MODBUS, 1-Wire sensors, automatic Neuron configuration, etc. 
 
 # Configuration
 
 Example of Basic config for three Unipi Neuron devices.<br/>
-type parameter is not used for any specific purpose but one should set it to either "L203", "M203" or "S203". Other parameters should be self explanatory.
+the type parameter is not used for any specific purpose but one should set it to either "L203", "M203" or "S203". Other parameters should be self-explanatory.
 ```yaml
 #Unipi neuron
 unipi_neuron:
@@ -49,7 +49,7 @@ Two modes are supported:<br/>
 
 Port names are the same as defined in Evok API.<br/>
 
-Note: Behavior of Unipi I/O's is configured on the Unipi device itself. So if if PWM mode is used by HA, then target output pin on Unipi must be configured accordingly.
+Note: the behavior of Unipi I/O's is configured on the Unipi device itself. So if PWM mode is used by HA, then the target output pin on Unipi must be configured accordingly.
 
 ```yaml
 #configuration.yaml
@@ -99,14 +99,14 @@ binary_sensor:
 
 
 ## Cover component
-Used to manage dummy cover/blinds that only support driving motor up and down ( without any ability or sensor to detect location of the blinds or tilt)
+Used to manage dummy cover/blinds that only support driving motor up and down ( without any ability or sensor to detect the location of the blinds or tilt)
 
-Warning: Based on the cover supplier documentation, driving both signals up and down at the same time my damage the motor. Well in fact this happened to me once but it was not the motor that burned, it was relay outputs on my Unipi! Anyhow I have added a couple of check in the code to prevent such situation but there may still be corner cases that are not fully covered - so use it with caution :). Use this software at your own risk! I do not take responsibility in any way. 
+Warning: Based on the cover supplier documentation, driving both signals up and down at the same time may damage the motor. Well in fact this happened to me once but it was not the motor that burned, it was the relay outputs on my Unipi! Anyhow I have added a couple of checks in the code to prevent such a situation but there may still be corner cases that are not fully covered - so use it with caution :). Use this software at your own risk! I do not take responsibility in any way. 
 
 port_up and port_down are output ports used to drive blinds up and down.<br/>
-full_close_time and full_open_time define the time it takes for blind to fully open (from closed state) or fully close (from open state) in seconds.<br/>
-tilt_change_time defines time (in seconds) that the tilt changes from fully open to fully closed state (and vice-versa) <br/>
-min_reverse_dir_time minimum time between changing the direction of the motor (in seconds) - defined by blind motor supplier.<br/>
+full_close_time and full_open_time define the time it takes for the blind to fully open (from a closed state) or fully close (from an open state) in seconds.<br/>
+tilt_change_time defines the time (in seconds) that the tilt changes from fully open to fully closed state (and vice-versa) <br/>
+min_reverse_dir_time minimum time between changing the direction of the motor (in seconds) - defined by the blind motor supplier.<br/>
 
 ```yaml
 #configuration.yaml
@@ -138,6 +138,6 @@ cover:
         friendly_name: "Cover Bedroom"
 ```
 # Feedback
-Your feedback or pull requests or any other contribution is welcome.
+Your feedback, pull requests and any other contribution are welcome.
 # License
 MIT License
