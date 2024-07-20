@@ -73,7 +73,7 @@ TILT_FEATURES = (
 COVER_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
-        vol.Required(CONF_DEVICE): vol.Any("relay", "led"),
+        vol.Required(CONF_DEVICE): vol.Any("relay", "led", "ro"),
         vol.Required(CONF_PORT_UP): cv.matches_regex(r"^[1-3]_[0-1][0-9]|[1-8]"),
         vol.Required(CONF_PORT_DOWN): cv.matches_regex(r"^[1-3]_[0-1][0-9]|[1-8]"),
         vol.Required(CONF_FULL_CLOSE_TIME): cv.time_period_seconds,

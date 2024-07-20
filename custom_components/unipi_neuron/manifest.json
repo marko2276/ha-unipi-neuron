@@ -4,7 +4,7 @@
   "documentation": "https://www.home-assistant.io/integrations/unipi_neuron",
   "requirements": ["evok-ws-client"],
   "dependencies": [],
-  "version": "0.0.3",
+  "version": "0.0.4",
   "codeowners": [
     "@marko2276",
     "@k3rn3l3rr0r"
