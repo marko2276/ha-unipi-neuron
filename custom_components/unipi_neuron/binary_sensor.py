@@ -29,7 +29,7 @@ DEVICE_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_DEVICE): vol.Any("input", "di"),
-        vol.Required(CONF_PORT): cv.matches_regex(r"^[1-3]_[0-1][0-9]"),
+        vol.Required(CONF_PORT): cv.matches_regex(r"^[1-9]_[0-1][0-9]"),
     }
 )
 
