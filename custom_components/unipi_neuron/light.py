@@ -6,7 +6,6 @@ import voluptuous as vol
 # Import the device class from the component that you want to support
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    SUPPORT_BRIGHTNESS,
     PLATFORM_SCHEMA,
     LightEntity,
     LightEntityFeature,
