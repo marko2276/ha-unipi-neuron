@@ -34,12 +34,19 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.script import Script
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.restore_state import RestoreEntity
 from datetime import datetime, timedelta
 
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 _VALID_STATES = [STATE_OPEN, STATE_CLOSED, STATE_OPENING, STATE_CLOSING]
+
+# A run counts as a full (calibrating) run if it lasted at least this share of the full time;
+# relay feedback latency otherwise makes an exactly-timed run randomly fall a few ms short.
+CALIBRATION_TOLERANCE = 0.98
+# When the position/tilt is unknown, drive this much longer than the full time (end switch stops the motor).
+UNKNOWN_OVERRUN = 1.1
 
 #oper states of blind motor drives
 STATE_IDLE = "idle"
@@ -161,7 +168,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     return True
 
 
-class UnipiCover(CoverEntity):
+class UnipiCover(CoverEntity, RestoreEntity):
     """Representation of a shades."""
 
     def __init__(
@@ -212,7 +219,15 @@ class UnipiCover(CoverEntity):
         self._available = True
 
     async def async_added_to_hass(self):
-        """Register callbacks."""
+        """Register callbacks and restore the last known position/tilt."""
+        await super().async_added_to_hass()
+        last = await self.async_get_last_state()
+        if last is not None and last.state not in (STATE_OPENING, STATE_CLOSING, "unavailable", "unknown"):
+            for attr, prop in (("current_position", "_position"), ("current_tilt_position", "_tilt_value")):
+                value = last.attributes.get(attr)
+                if isinstance(value, (int, float)) and 0 <= value <= 100:
+                    setattr(self, prop, value)
+            _LOGGER.debug("%s: restored position %s, tilt %s", self._name, self._position, self._tilt_value)
 
         signal = f"{DOMAIN}_{self._unipi_hub._name}_{self._device}_{self._port_up}"
         _LOGGER.debug("connecting %s", signal)
@@ -367,11 +382,11 @@ class UnipiCover(CoverEntity):
             if new_position == 0:
                 self._cancel_any_pending_stop_cover_timers()
                 await self.async_close_cover()
-                self._stop_cover_timer = async_call_later(self.hass, self._full_close_time, self._stop_cover_timeout)
+                self._stop_cover_timer = async_call_later(self.hass, self._full_close_time * UNKNOWN_OVERRUN, self._stop_cover_timeout)
             elif new_position == 100:
                 self._cancel_any_pending_stop_cover_timers()
                 await self.async_open_cover()
-                self._stop_cover_timer = async_call_later(self.hass, self._full_open_time, self._stop_cover_timeout)
+                self._stop_cover_timer = async_call_later(self.hass, self._full_open_time * UNKNOWN_OVERRUN, self._stop_cover_timeout)
         else:
             position, tilt = current_state = self._get_position_and_tilt(self._oper_state, self._time_last_movement_start, datetime.now(), False)
             stop_timer = 0
@@ -418,11 +433,11 @@ class UnipiCover(CoverEntity):
             if new_tilt_value == 0:
                 self._cancel_any_pending_stop_cover_timers()
                 await self.async_close_cover()
-                self._stop_cover_timer = async_call_later(self.hass, self._tilt_change_time, self._stop_cover_timeout)
+                self._stop_cover_timer = async_call_later(self.hass, self._tilt_change_time * UNKNOWN_OVERRUN, self._stop_cover_timeout)
             elif new_tilt_value == 100:
                 self._cancel_any_pending_stop_cover_timers()
                 await self.async_open_cover()
-                self._stop_cover_timer = async_call_later(self.hass, self._tilt_change_time, self._stop_cover_timeout)
+                self._stop_cover_timer = async_call_later(self.hass, self._tilt_change_time * UNKNOWN_OVERRUN, self._stop_cover_timeout)
         else:
             position, tilt = current_state = self._get_position_and_tilt(self._oper_state, self._time_last_movement_start, datetime.now(), False)
 
@@ -499,7 +514,7 @@ class UnipiCover(CoverEntity):
 
         #tilt
         if oper_state == OPER_STATE_OPENING:
-            if deltatime >= self._tilt_change_time*1000:
+            if deltatime >= self._tilt_change_time*1000*CALIBRATION_TOLERANCE:
                 new_tilt_value = 100
             else:
                 tilt_change = deltatime*100/self._tilt_change_time/1000
@@ -511,7 +526,7 @@ class UnipiCover(CoverEntity):
                     pass
 
         if oper_state == OPER_STATE_CLOSING:
-            if deltatime >= self._tilt_change_time*1000:
+            if deltatime >= self._tilt_change_time*1000*CALIBRATION_TOLERANCE:
                 new_tilt_value = 0
             else:
                 tilt_change = deltatime*100/self._tilt_change_time/1000
@@ -525,7 +540,7 @@ class UnipiCover(CoverEntity):
 
         #position
         if oper_state == OPER_STATE_OPENING:
-            if deltatime >= self._full_open_time*1000:
+            if deltatime >= self._full_open_time*1000*CALIBRATION_TOLERANCE:
                 new_position_value = 100
             else:
                 position_change = deltatime*100/(self._full_open_time*1000)
@@ -536,7 +551,7 @@ class UnipiCover(CoverEntity):
                 except:
                     pass
         if oper_state == OPER_STATE_CLOSING:
-            if deltatime >= self._full_close_time*1000:
+            if deltatime >= self._full_close_time*1000*CALIBRATION_TOLERANCE:
                 new_position_value = 0
             else:
                 position_change = deltatime*100/(self._full_close_time*1000)

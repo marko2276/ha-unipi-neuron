@@ -110,6 +110,9 @@ full_close_time and full_open_time define the time it takes for the blind to ful
 tilt_change_time defines the time (in seconds) that the tilt changes from fully open to fully closed state (and vice-versa) <br/>
 min_reverse_dir_time minimum time between changing the direction of the motor (in seconds) - defined by the blind motor supplier.<br/>
 
+Position and tilt are calculated from the motor run time. A run that lasts the full open/close (or tilt change) time calibrates the cover to the end position; to tolerate relay feedback latency, a run of at least 98 % of that time counts as a full run. When the position or tilt is unknown, a move to 0 or 100 drives the motor 10 % longer than the configured time so the cover reliably reaches its end stop.<br/>
+The last known position and tilt are restored after a Home Assistant restart.<br/>
+
 ```yaml
 #configuration.yaml
 cover:
